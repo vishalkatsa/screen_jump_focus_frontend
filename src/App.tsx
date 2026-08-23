@@ -1,6 +1,6 @@
 import './App.css'
 
-const APK_PATH = '/downloads/screen-jump-focus.apk'
+const APK_PATH = 'https://publicvishal.s3.ap-south-1.amazonaws.com/app-release.apk'
 type IconName = 'chart' | 'timer' | 'shield' | 'spark' | 'download' | 'phone'
 
 function Icon({name}: {name: IconName}) {
@@ -54,7 +54,7 @@ function HomePage() {
 }
 
 function InstallPage() {
-  return <><Header /><main className="install-page"><section className="install-card"><div className="install-icon"><Icon name="phone" /></div><p className="eyebrow">ANDROID APP</p><h1>Install Screen Jump Focus</h1><p>Download the Android APK and start building healthier screen habits.</p><div className="app-info"><span className="brand-mark large"><span /></span><div><strong>Screen Jump Focus</strong><small>Android 8.0 and above</small><small></small></div></div><a className="button primary download" href={APK_PATH} download="screen-jump-focus.apk"><Icon name="download" /> Download APK</a><div className="install-help"><h3>How to install</h3><ol><li>Download the APK file.</li><li>Open the downloaded file.</li><li>Allow installation from this source if Android asks.</li><li>Tap Install, then open the app.</li></ol></div><p className="safety"><Icon name="shield" /> The APK is downloaded directly from this website.</p></section></main><Footer /></>
+  return <><Header /><main className="install-page"><section className="install-card"><div className="install-icon"><Icon name="phone" /></div><p className="eyebrow">ANDROID APP</p><h1>Install Screen Jump Focus</h1><p>Download the Android APK and start building healthier screen habits.</p><div className="app-info"><span className="brand-mark large"><span /></span><div><strong>Screen Jump Focus</strong><small>Android 8.0 and above</small><small>Latest college demo build</small></div></div><a className="button primary download" href={APK_PATH}><Icon name="download" /> Download APK</a><div className="install-help"><h3>How to install</h3><ol><li>Download the APK file.</li><li>Open the downloaded file.</li><li>Allow installation from this source if Android asks.</li><li>Tap Install, then open the app.</li></ol></div><p className="safety"><Icon name="shield" /> Secure APK download from cloud storage.</p></section></main><Footer /></>
 }
 
 function App() {
