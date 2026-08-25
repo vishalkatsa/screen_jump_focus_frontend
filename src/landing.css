@@ -28,6 +28,41 @@
 
 .why-copy p { margin: 0 0 18px; }
 
+.demo-section {
+  padding: 105px 0;
+  background: #f3f8f6;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 78px;
+}
+
+.video-frame {
+  position: relative;
+  width: min(920px, 100%);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 10px solid white;
+  border-radius: 28px;
+  background: var(--ink);
+  box-shadow: 0 28px 70px #071e2b24;
+}
+
+.video-frame iframe { width: 100%; height: 100%; border: 0; }
+
+.youtube-link {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin: 24px auto 0;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.youtube-link:hover { text-decoration: underline; }
+
 .commitment {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
@@ -137,6 +172,8 @@
 
 @media (max-width: 600px) {
   .why-section { padding: 65px 0; }
+  .demo-section { padding: 72px 0; }
+  .video-frame { border-width: 5px; border-radius: 18px; }
   .why-grid h2,
   .commitment h2 { font-size: 38px; letter-spacing: -1.8px; }
   .commitment { margin-top: 75px; }
