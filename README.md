@@ -1,4 +1,26 @@
-# React + TypeScript + Vite
+# Screen Jump Focus Frontend
+
+## Web account portal
+
+The public frontend includes `/login`, `/register`, and `/dashboard`. Configure
+the Frappe backend URL before building:
+
+```bash
+cp .env.example .env.local
+npm run build
+```
+
+For Vercel, set `VITE_API_BASE_URL` to the public HTTPS Frappe backend URL. The
+backend must allow the exact frontend origin, for example in site config:
+
+```json
+{"allow_cors": "https://screenjumpfocusfrontend.vercel.app"}
+```
+
+Do not use `*` for the production CORS origin. Wallet recharge is intentionally
+read-only until a payment-gateway webhook integration is available.
+
+## Development
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
