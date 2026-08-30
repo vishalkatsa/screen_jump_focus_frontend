@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/backend/:path*",
+      "destination": "https://electric-snake-ethical.ngrok-free.app/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

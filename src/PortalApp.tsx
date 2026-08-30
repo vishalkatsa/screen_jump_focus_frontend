@@ -8,7 +8,27 @@ import {portalApi} from './portalApi'
 import type {Commitment, Dashboard} from './portalApi'
 import './portal.css'
 
+type CashfreeCheckoutResult = {error?: {message?: string}}
+type CashfreeInstance = {checkout(options: {paymentSessionId: string; redirectTarget: '_self' | '_modal'}): Promise<CashfreeCheckoutResult>}
+declare global { interface Window { Cashfree?: (options: {mode: 'sandbox' | 'production'}) => CashfreeInstance } }
+let cashfreeScript: Promise<void> | null = null
+
+function loadCashfree(): Promise<void> {
+  if (window.Cashfree) return Promise.resolve()
+  if (cashfreeScript) return cashfreeScript
+  cashfreeScript = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Unable to load secure payment checkout.'))
+    document.head.appendChild(script)
+  })
+  return cashfreeScript
+}
+
 countries.registerLocale(englishCountries)
+const formatMoney = (value: number) => `₹${Number(value).toFixed(2)}`
 const countryOptions = Object.entries(countries.getNames('en', {select: 'official'}))
   .filter(([code]) => isSupportedCountry(code as CountryCode))
   .sort(([, first], [, second]) => first.localeCompare(second)) as [CountryCode, string][]
@@ -25,6 +45,9 @@ function PortalBrand() {
 }
 
 export function PortalApp(): React.JSX.Element {
+  const [authReady, setAuthReady] = useState(false)
+  useEffect(() => { void portalApi.restore().finally(() => setAuthReady(true)) }, [])
+  if (!authReady) return <main className="portal-loading"><PortalBrand /><div className="loading-ring" /><p>Checking your session…</p></main>
   const path = window.location.pathname.replace(/\/$/, '')
   if (path === '/login') return <AuthPage mode="login" />
   if (path === '/register') return <AuthPage mode="register" />
@@ -108,10 +131,10 @@ function DashboardPage({page}: {page: DashboardPageName}) {
     finally { setBusy('') }
   }
   if (!data) return <main className="portal-loading"><PortalBrand /><div className="loading-ring" /><p>{error || 'Loading your dashboard…'}</p>{error ? <button onClick={load}>Try again</button> : null}</main>
-  const money = (value: number) => `₹${Number(value).toFixed(2)}`
+  const money = formatMoney
   let content: React.JSX.Element
   if (page === 'profile') content = <ProfilePage data={data} />
-  else if (page === 'wallet') content = <WalletPage data={data} money={money} busy={busy === 'withdrawal'} onWithdraw={withdraw} />
+  else if (page === 'wallet') content = <WalletPage data={data} money={money} busy={busy === 'withdrawal'} onReload={load} onWithdraw={withdraw} />
   else if (page === 'commitments') content = <CommitmentsPage data={data} onPageChange={setCommitmentPage} />
   else if (page === 'activity') content = <ActivityPage data={data} money={money} onPageChange={setTransactionPage} />
   else content = <OverviewPage data={data} money={money} />
@@ -128,12 +151,72 @@ function OverviewPage({data, money}: {data: Dashboard; money(value: number): str
   return <main className="dashboard-main"><div className="dashboard-welcome"><div><p className="eyebrow">ACCOUNT DASHBOARD</p><h1>Welcome, {data.user.first_name}</h1><p>{data.user.email}{data.customer ? ` · Customer ${data.customer}` : ''}</p></div><a className="app-link" href="/app-install">Get Android app</a></div><section className="balance-grid"><Balance label="Available" value={money(data.wallet.available_balance)} tone="green" /><Balance label="Locked" value={money(data.wallet.locked_balance)} /><Balance label="Pending donation" value={money(data.wallet.pending_donation_balance)} tone="red" /><Balance label="Pending withdrawal" value={money(data.wallet.pending_withdrawal_balance)} tone="blue" /></section></main>
 }
 
-function WalletPage({data, money, busy, onWithdraw}: {data: Dashboard; money(value: number): string; busy: boolean; onWithdraw(amount: number): void}) {
+function WalletPage({data, money, busy, onWithdraw, onReload}: {data: Dashboard; money(value: number): string; busy: boolean; onWithdraw(amount: number): void; onReload(): Promise<void>}) {
   const [amount, setAmount] = useState('')
+  const [rechargeAmount, setRechargeAmount] = useState('')
+  const [rechargeBusy, setRechargeBusy] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState('')
   const available = Number(data.wallet.available_balance)
   const requestedAmount = Number(amount)
   const validAmount = Number.isFinite(requestedAmount) && requestedAmount > 0 && requestedAmount <= available
-  return <main className="dashboard-main"><PageHeading eyebrow="WALLET" title="Your wallet" description="Review available, locked and pending balances." /><section className="balance-grid"><Balance label="Available" value={money(available)} tone="green" /><Balance label="Locked" value={money(data.wallet.locked_balance)} /><Balance label="Pending donation" value={money(data.wallet.pending_donation_balance)} tone="red" /><Balance label="Pending withdrawal" value={money(data.wallet.pending_withdrawal_balance)} tone="blue" /></section><section className="withdraw-panel"><div><small>WITHDRAW AVAILABLE BALANCE</small><h2>Request a withdrawal</h2><p>Enter an amount up to your available balance. After requesting, it moves to pending withdrawal until payout is processed.</p></div><div className="withdraw-form"><label>Amount<input max={available} min="1" placeholder="₹0.00" step="0.01" type="number" value={amount} onChange={event => setAmount(event.target.value)} /></label><button disabled={busy || !validAmount} onClick={() => onWithdraw(requestedAmount)} type="button">{busy ? 'Requesting…' : 'Request withdrawal'}</button></div></section><section className="portal-recharge"><div><small>WALLET RECHARGE</small><h2>Online recharge is coming soon</h2><p>Wallet balance cannot be manually changed from this dashboard. Future credits will be added only after a verified payment-gateway webhook.</p></div><span>Future feature</span></section></main>
+  const rechargeValue = Number(rechargeAmount)
+  const validRecharge = Number.isFinite(rechargeValue) && rechargeValue >= 1 && rechargeValue <= 100000
+
+  useEffect(() => {
+    const orderId = new URLSearchParams(window.location.search).get('cashfree_order_id')
+    if (!orderId) return
+    let stopped = false
+    let attempts = 0
+    const check = async () => {
+      try {
+        const status = await portalApi.rechargeStatus(orderId)
+        if (stopped) return
+        setPaymentMessage(status.status === 'Paid' ? `Payment successful. ${money(status.amount)} added to your wallet.` : `Payment status: ${status.status}. Waiting for secure payment confirmation.`)
+        if (status.status === 'Paid') { await onReload(); return }
+        if (status.status === 'Failed' || status.status === 'User Dropped' || attempts >= 14) return
+        attempts += 1
+        window.setTimeout(() => void check(), 2000)
+      } catch (reason) {
+        if (!stopped) setPaymentMessage(reason instanceof Error ? reason.message : 'Unable to check payment status.')
+      }
+    }
+    void check()
+    return () => { stopped = true }
+  }, [money, onReload])
+
+  const startRecharge = async () => {
+    if (!validRecharge) return
+    setRechargeBusy(true); setPaymentMessage('')
+    try {
+      const order = await portalApi.createRecharge(rechargeValue)
+      await loadCashfree()
+      if (!window.Cashfree) throw new Error('Secure payment checkout is unavailable.')
+      const result = await window.Cashfree({mode: order.environment}).checkout({paymentSessionId: order.payment_session_id, redirectTarget: '_modal'})
+      if (result?.error) throw new Error(result.error.message || 'Unable to open payment checkout.')
+      setPaymentMessage('Checking payment status…')
+      for (let attempt = 0; attempt < 15; attempt += 1) {
+        const status = await portalApi.rechargeStatus(order.order_id)
+        if (status.status === 'Paid') {
+          setPaymentMessage(`Payment successful. ${money(status.amount)} added to your wallet.`)
+          await onReload()
+          break
+        }
+        if (status.status === 'Failed' || status.status === 'User Dropped') {
+          setPaymentMessage(status.status === 'Failed' ? 'Payment failed. Your wallet was not charged.' : 'Payment was cancelled.')
+          break
+        }
+        if (attempt === 14) {
+          setPaymentMessage('Payment confirmation is taking longer than expected. Please refresh shortly.')
+          break
+        }
+        await new Promise(resolve => window.setTimeout(resolve, 2000))
+      }
+    } catch (reason) {
+      setPaymentMessage(reason instanceof Error ? reason.message : 'Unable to start payment.')
+    } finally { setRechargeBusy(false) }
+  }
+
+  return <main className="dashboard-main"><PageHeading eyebrow="WALLET" title="Your wallet" description="Review available, locked and pending balances." />{paymentMessage ? <p className="payment-message">{paymentMessage}</p> : null}<section className="balance-grid"><Balance label="Available" value={money(available)} tone="green" /><Balance label="Locked" value={money(data.wallet.locked_balance)} /><Balance label="Pending donation" value={money(data.wallet.pending_donation_balance)} tone="red" /><Balance label="Pending withdrawal" value={money(data.wallet.pending_withdrawal_balance)} tone="blue" /></section><section className="recharge-panel"><div><small>SECURE WALLET RECHARGE</small><h2>Add money securely</h2><p>Your wallet is credited only after verified successful-payment confirmation. Maximum ₹1,00,000 per payment.</p></div><div className="withdraw-form"><label>Amount<input autoComplete="off" inputMode="decimal" maxLength={9} placeholder="₹0.00" type="text" value={rechargeAmount} onChange={event => { if (/^\d*(\.\d{0,2})?$/.test(event.target.value)) setRechargeAmount(event.target.value) }} /></label><button disabled={rechargeBusy || !validRecharge} onClick={() => void startRecharge()} type="button">{rechargeBusy ? 'Opening…' : 'Proceed to pay'}</button></div></section><section className="withdraw-panel"><div><small>WITHDRAW AVAILABLE BALANCE</small><h2>Request a withdrawal</h2><p>Enter an amount up to your available balance. After requesting, it moves to pending withdrawal until payout is processed.</p></div><div className="withdraw-form"><label>Amount<input max={available} min="1" placeholder="₹0.00" step="0.01" type="number" value={amount} onChange={event => setAmount(event.target.value)} /></label><button disabled={busy || !validAmount} onClick={() => onWithdraw(requestedAmount)} type="button">{busy ? 'Requesting…' : 'Request withdrawal'}</button></div></section></main>
 }
 
 function CommitmentsPage({data, onPageChange}: {data: Dashboard; onPageChange(page: number): void}) {
