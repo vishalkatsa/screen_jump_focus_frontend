@@ -1,4 +1,7 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://screen.localhost:8000').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ||
+   'https://screenjumpfocus.carryunited.in'
+  
+  ).replace(/\/$/, '')
 const portalPath = '/api/method/screen_jump_focus.api.web_portal'
 
 export type PortalUser = {email: string; first_name: string; last_name?: string; full_name: string; user_image?: string}
