@@ -1,6 +1,6 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ||
-   'https://screenjumpfocus.carryunited.in'
-  // 'http://localhost:8000'
+  //  'https://screenjumpfocus.carryunited.in'
+  'http://localhost:8000'
   
   ).replace(/\/$/, '')
 const portalPath = '/api/method/screen_jump_focus.api.web_portal'
@@ -15,8 +15,18 @@ export type Commitment = {
   donation?: {organisation: string; proof_url: string; donated_at: string} | null;
 }
 export type Transaction = {name: string; transaction_type: string; amount: number; status: string; commitment?: string; note?: string; processed_at: string}
-export type RechargeOrder = {order_id: string; payment_session_id: string; amount: number; currency: string; environment: 'sandbox' | 'production'}
-export type RechargeStatus = {order_id: string; amount: number; currency: string; status: string; paid_at?: string}
+export type RechargeQuote = {
+  wallet_amount: number; platform_fee_percentage: number; platform_fee_amount: number;
+  platform_fee_gst_percentage: number; platform_fee_gst_amount: number;
+  gateway_fee_percentage: number; gateway_fee_amount: number;
+  gateway_fee_gst_percentage: number; gateway_fee_gst_amount: number;
+  total_payable: number; currency: string;
+}
+export type RechargeOrder = RechargeQuote & {order_id: string; payment_session_id: string; environment: 'sandbox' | 'production'}
+export type RechargeStatus = RechargeQuote & {order_id: string; amount: number; status: string; paid_at?: string}
+export type Bank = {name: string; bank_name: string}
+export type BankAccount = {id: string; account_holder_name: string; bank: string; account_number_masked: string; ifsc_code: string; is_default: boolean}
+export type WithdrawalRequest = {request_id: string; amount: number; currency: string; status: string; bank_account: {bank: string; account_number_masked: string}; requested_at: string; reviewed_at?: string; rejection_reason?: string}
 export type Pagination = {page: number; page_size: number; total: number; total_pages: number}
 export type Dashboard = {user: PortalUser; customer?: string; wallet: Wallet; commitments: Commitment[]; transactions: Transaction[]; pagination: {commitments: Pagination; transactions: Pagination}; recharge: {enabled: boolean; message: string}}
 
@@ -110,9 +120,20 @@ export const portalApi = {
     const session = await request<PortalSession>('register', {first_name: firstName, last_name: lastName, mobile_number: mobileNumber, country_code: countryCode, email, password, terms_accepted: termsAccepted}); saveSession(session); return session
   },
   dashboard: (commitmentPage = 1, transactionPage = 1) => authorized<Dashboard>('dashboard', undefined, {commitment_page: commitmentPage, transaction_page: transactionPage}),
+  rechargeQuote: (amount: number) => authorized<RechargeQuote>('recharge_quote', undefined, {amount}),
   createRecharge: (amount: number) => authorized<RechargeOrder>('create_recharge', {amount}),
   rechargeStatus: (orderId: string) => authorized<RechargeStatus>('recharge_status', undefined, {order_id: orderId}),
-  withdraw: (amount: number) => authorized<{transaction: string; status: string; wallet: Wallet}>('withdraw', {amount}),
+  banks: () => authorized<Bank[]>('banks'),
+  bankAccounts: () => authorized<BankAccount[]>('bank_accounts'),
+  addBankAccount: (accountHolderName: string, bank: string, accountNumber: string, ifscCode: string) => authorized<BankAccount>('add_bank_account', {
+    account_holder_name: accountHolderName,
+    bank,
+    account_number: accountNumber,
+    ifsc_code: ifscCode,
+  }),
+  removeBankAccount: (bankAccount: string) => authorized<{success: boolean}>('remove_bank_account', {bank_account: bankAccount}),
+  withdraw: (amount: number, bankAccountId: string) => authorized<{request_id: string; status: string; wallet: Wallet}>('withdraw', {amount, bank_account_id: bankAccountId}),
+  withdrawalRequests: () => authorized<WithdrawalRequest[]>('withdrawal_requests'),
   async logout() {
     try { if (savedSession()) await authorized('logout', {}) }
     finally { saveSession(null) }
