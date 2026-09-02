@@ -1,0 +1,207 @@
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  padding: 8px 16px;
+  border-top: 1px solid #dfe7ed99;
+  background: #eefaf5;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.trust-strip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trust-strip span::before {
+  content: "✓";
+}
+
+.developer-donation-link {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.developer-donation-link:hover {
+  text-decoration: underline;
+}
+
+.developer-donation {
+  display: grid;
+  gap: 3px;
+  max-width: 250px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfdfc;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.developer-donation strong {
+  color: var(--green);
+  font-size: 11px;
+}
+
+.developer-donation code {
+  overflow: hidden;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .developer-donation {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .developer-donation code {
+    white-space: normal;
+    word-break: break-all;
+  }
+}
+
+.donation-page {
+  min-height: calc(100vh - 78px);
+  padding: 70px 20px;
+  background: radial-gradient(circle at 50% 10%, #dff8ee, transparent 36%), #f7faf9;
+}
+
+.donation-panel {
+  width: min(760px, 100%);
+  margin: auto;
+  padding: 46px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: white;
+  box-shadow: 0 24px 70px #071e2b1a;
+}
+
+.donation-panel h1 {
+  margin: 10px 0 12px;
+  font-size: clamp(36px, 6vw, 54px);
+  letter-spacing: -2px;
+}
+
+.donation-panel > p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.donation-methods {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.donation-methods article {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fbfdfc;
+}
+
+.donation-method-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pay-logo {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 15px;
+  color: white;
+  font-style: normal;
+  font-weight: 950;
+  box-shadow: 0 10px 25px #071e2b18;
+}
+
+.upi-logo {
+  background: linear-gradient(135deg, #f58220, #138808);
+  font-size: 12px;
+  letter-spacing: -.5px;
+}
+
+.usdt-logo {
+  background: #26a17b;
+  font-size: 28px;
+}
+
+.eth-logo {
+  background: linear-gradient(135deg, #627eea, #2f3f8f);
+  font-size: 24px;
+}
+
+.btc-logo {
+  background: #f7931a;
+  font-size: 25px;
+}
+
+.donation-methods span {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.donation-methods h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 24px;
+  word-break: break-word;
+}
+
+.donation-methods p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.donation-methods code {
+  padding: 12px;
+  border-radius: 13px;
+  background: #eefaf5;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.donation-note {
+  margin-top: 22px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #fff8e8;
+  color: #8b6617 !important;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .donation-panel {
+    padding: 32px 20px;
+  }
+
+  .donation-methods {
+    grid-template-columns: 1fr;
+  }
+}

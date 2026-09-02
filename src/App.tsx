@@ -1,10 +1,15 @@
 import './App.css'
 import './landing.css'
+import './donation.css'
 import {useEffect, useState} from 'react'
 import {PortalApp} from './PortalApp'
 import {ACCOUNT_PORTAL_ENABLED, PAID_COMMITMENTS_ENABLED} from './featureFlags'
 
 const APK_PATH = 'https://publicvishal.s3.ap-south-1.amazonaws.com/app-release.apk'
+const DONATION_UPI_ID = 'itdev@ybl'
+const DONATION_USDT_TRC20_ADDRESS = 'TRAk2QcWf7e7Vgkf82inj1Dv1TLuKYsLy7'
+const DONATION_USDT_ETH_ADDRESS = '0xb06d4e335a0949bb09C09b4442A3D9e642cb2001'
+const DONATION_BTC_ADDRESS = 'bc1qyj3t4s5q8mtq0yzzmve80f2ll9gqc59lv49pwr'
 type IconName = 'chart' | 'timer' | 'shield' | 'spark' | 'download' | 'phone' | 'heart' | 'wallet'
 
 function Icon({name}: {name: IconName}) {
@@ -26,11 +31,11 @@ function Brand() {
 }
 
 function Header() {
-  return <header><div className="nav shell"><Brand /><nav><a href="/#why">Why it exists</a><a href="/#features">Features</a><a href="/#demo">Demo</a>{PAID_COMMITMENTS_ENABLED ? <><a href="/#modes">Choose a mode</a><a href="/#commitment">Commitment</a></> : null}<a href="/#guidelines">Guidelines</a>{ACCOUNT_PORTAL_ENABLED ? <a href="/login">Account</a> : null}<a className="nav-cta" href="/app-install">Get the app</a></nav></div></header>
+  return <header><div className="nav shell"><Brand /><nav><a href="/#why">Why it exists</a><a href="/#features">Features</a><a href="/#demo">Demo</a>{PAID_COMMITMENTS_ENABLED ? <><a href="/#modes">Choose a mode</a><a href="/#commitment">Commitment</a></> : null}<a href="/#guidelines">Guidelines</a>{ACCOUNT_PORTAL_ENABLED ? <a href="/login">Account</a> : null}<a className="nav-cta" href="/app-install">Get the app</a></nav></div><div className="trust-strip"><span>100% free</span><span>Core app works offline</span><span>Usage data stays on your device</span></div></header>
 }
 
 function Footer() {
-  return <footer><div className="shell footer-inner"><Brand /><p>Built for healthier digital habits.</p><a className="linkedin-link" href="https://www.linkedin.com/in/vishal-kumar-763b1724a" target="_blank" rel="noreferrer" aria-label="Vishal Kumar on LinkedIn"><span>in</span> Vishal Kumar</a><p>© 2026 Screen Jump Focus</p></div></footer>
+  return <footer><div className="shell footer-inner"><Brand /><p>Built for healthier digital habits.</p><a className="developer-donation-link" href="/developer-donation">Developer donation</a><a className="linkedin-link" href="https://www.linkedin.com/in/vishal-kumar-763b1724a" target="_blank" rel="noreferrer" aria-label="Vishal Kumar on LinkedIn"><span>in</span> Vishal Kumar</a><p>© 2026 Screen Jump Focus</p></div></footer>
 }
 
 function PhonePreview() {
@@ -79,7 +84,7 @@ function HomePage() {
   const appSetupEvents = PAID_COMMITMENTS_ENABLED ? paidCommitmentEvents : localSetupEvents
   return <><Header /><main><section className="hero shell"><div className="hero-copy">
     <span className="pill"><span /> Less scrolling. More living.</span><h1>Use social media.<br/><em>Do not let it use you.</em></h1><p>Screen Jump Focus helps you reduce mindless scrolling, protect time for study, work and real life, and turn your intention to stop into a limit your phone can actually enforce.</p><div className="one-percent-message"><strong>Built for the 1% People who choose focus over distraction.</strong><span>Protect your time. Achieve what others only plan.</span></div>
-    <div className="hero-actions"><a className="button primary" href="/app-install"><Icon name="download" /> Download for Android</a><span className="button ios-soon">iOS · Coming soon</span><a className="button ghost" href="#features">Explore features</a></div><div className="trust"><span>✓ Free to try</span><span>✓ Private by design</span><span>✓ Android 8+</span></div>
+    <div className="hero-actions"><a className="button primary" href="/app-install"><Icon name="download" /> Download for Android</a><span className="button ios-soon">iOS · Coming soon</span><a className="button ghost" href="#features">Explore features</a></div><div className="trust"><span>✓ 100% free</span><span>✓ Core app works offline</span><span>✓ Usage data stays on device</span><span>✓ Android 8+</span></div>
   </div><PhonePreview /></section>
   <section className="why-section" id="why"><div className="shell why-grid"><div><p className="eyebrow">WHY WE BUILT IT</p><h2>Your attention should belong to you.</h2></div><div className="why-copy"><p>Social apps are useful, but endless feeds make it easy to lose time without choosing to. A quick check can become an hour of scrolling—and the things that matter get pushed aside.</p><p>Screen Jump Focus is not about giving up your phone. It is about using it on purpose: know where your time goes, decide what is enough, and get a meaningful reminder when habit tries to take over.</p></div></div></section>
   <section className="section shell" id="features"><div className="section-heading"><p className="eyebrow">BUILT FOR BETTER HABITS</p><h2>Four tools between you and the scroll</h2><p>Clear feedback, limits and reminders that make your daily intention easier to keep.</p></div><div className="feature-grid">{features.map(([icon,title,copy])=> icon === 'spark' ? <article className="feature-preview" key={title} onClick={() => setMotivationOpen(true)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setMotivationOpen(true) } }} role="button" tabIndex={0}><span className="icon"><Icon name={icon}/></span><h3>{title}</h3><p>{copy}</p><span className="preview-link">Watch example video <b>▶</b></span></article> : <article key={title}><span className="icon"><Icon name={icon}/></span><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
@@ -96,6 +101,10 @@ function InstallPage() {
   return <><Header /><main className="install-page"><section className="install-card"><div className="install-icon"><Icon name="phone" /></div><p className="eyebrow">ANDROID APP</p><h1>Install Screen Jump Focus</h1><p>Download the Android APK and start building healthier screen habits.</p><div className="app-info"><span className="brand-mark large"><span /></span><div><strong>Screen Jump Focus</strong><small>Android 8.0 and above</small><small>Latest college demo build</small></div></div><a className="button primary download" href={APK_PATH}><Icon name="download" /> Download APK</a><div className="ios-coming"><strong>iOS app</strong><span>Coming soon</span><p>We are working on the iPhone version of Screen Jump Focus.</p></div><div className="install-help"><h3>How to install</h3><ol><li>Download the APK file.</li><li>Open the downloaded file.</li><li>Allow installation from this source if Android asks.</li><li>Tap Install, then open the app.</li></ol></div><p className="safety"><Icon name="shield" /> Secure APK download from cloud storage.</p></section></main><Footer /></>
 }
 
+function DeveloperDonationPage() {
+  return <><Header /><main className="donation-page"><section className="donation-panel"><p className="eyebrow">SUPPORT THE DEVELOPER</p><h1>Developer donation</h1><p>If Screen Jump Focus helped you protect your attention, you can support development using UPI or crypto.</p><div className="donation-methods"><article><div className="donation-method-head"><i className="pay-logo upi-logo">UPI</i><span>UPI</span></div><h2>{DONATION_UPI_ID}</h2><p>Use any Indian UPI app and send to this UPI ID.</p><a className="button primary" href={`upi://pay?pa=${DONATION_UPI_ID}&pn=Screen%20Jump%20Focus%20Developer&cu=INR`}>Open UPI app</a></article><article><div className="donation-method-head"><i className="pay-logo usdt-logo">₮</i><span>USDT</span></div><h2>Tether USD</h2><p>Network: TRC20 / Tron</p><code>{DONATION_USDT_TRC20_ADDRESS}</code></article><article><div className="donation-method-head"><i className="pay-logo eth-logo">◆</i><span>USDT</span></div><h2>Tether USD</h2><p>Network: Ethereum / ERC20</p><code>{DONATION_USDT_ETH_ADDRESS}</code></article><article><div className="donation-method-head"><i className="pay-logo btc-logo">₿</i><span>BTC</span></div><h2>Bitcoin</h2><p>Network: Bitcoin</p><code>{DONATION_BTC_ADDRESS}</code></article></div><p className="donation-note">Please verify the UPI ID, coin and network before sending. Crypto transfers cannot be reversed.</p></section></main><Footer /></>
+}
+
 function NotFoundPage() {
   return <><Header /><main className="not-found-page shell"><p className="eyebrow">404</p><h1>Page not found</h1><p>This page is not available right now.</p><div className="hero-actions"><a className="button primary" href="/">Go home</a><a className="button ghost" href="/app-install">Get the app</a></div></main><Footer /></>
 }
@@ -105,6 +114,7 @@ function App() {
   if (ACCOUNT_PORTAL_ENABLED && (path === '/login' || path === '/register' || path === '/dashboard' || path.startsWith('/dashboard/'))) return <PortalApp />
   if (path === '') return <HomePage />
   if (path === '/app-install') return <InstallPage />
+  if (path === '/developer-donation') return <DeveloperDonationPage />
   return <NotFoundPage />
 }
 
