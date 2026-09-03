@@ -12,6 +12,31 @@
 .ios-coming > span { position: absolute; top: 16px; right: 18px; padding: 5px 9px; border-radius: 20px; background: #e6ecef; color: #657386; font-size: 10px; font-weight: 900; text-transform: uppercase; }
 .ios-coming p { margin: 6px 0 0; color: #637083; font-size: 12px; }
 
+.setup-guide { padding: 110px 0 50px; }
+.install-settings-guide { padding: 100px 0 0; }
+.install-settings-guide .section-heading { margin-bottom: 42px; }
+.setup-guide .section-heading { margin-bottom: 42px; }
+.setup-step-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.setup-step { overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: white; box-shadow: 0 16px 42px #1027380d; }
+.setup-step-heading { display: flex; gap: 14px; min-height: 116px; padding: 22px; }
+.setup-step-heading > span { display: grid; width: 58px; height: 31px; flex: none; place-items: center; border-radius: 20px; background: var(--pale); color: var(--green); font-size: 11px; font-weight: 900; }
+.setup-step h3 { margin: 0 0 6px; font-size: 18px; }
+.setup-step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.setup-step a { display: block; background: #eef2f3; }
+.setup-step img { display: block; width: 100%; height: 440px; object-fit: contain; object-position: center top; transition: transform 180ms ease; }
+.setup-step a:hover img { transform: scale(1.015); }
+.restricted-settings-note { display: flex; gap: 17px; max-width: 850px; margin: 34px auto 0; padding: 24px; border: 1px solid #cde9dc; border-radius: 22px; background: var(--pale); }
+.restricted-settings-note > span { display: grid; width: 48px; height: 48px; flex: none; place-items: center; border-radius: 15px; background: white; color: var(--green); }
+.restricted-settings-note svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.restricted-settings-note .eyebrow { margin: 0 0 6px; }
+.restricted-settings-note h3 { margin: 0 0 8px; font-size: 20px; }
+.restricted-settings-note p:last-child { margin: 0; color: #426356; font-size: 13px; line-height: 1.65; }
+.manufacturer-note { display: flex; gap: 14px; max-width: 850px; margin: 34px auto 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 18px; background: white; }
+.manufacturer-note > span { display: grid; width: 42px; height: 42px; flex: none; place-items: center; border-radius: 13px; background: #f1f7f4; color: var(--green); }
+.manufacturer-note svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.manufacturer-note h3 { margin: 1px 0 5px; font-size: 16px; }
+.manufacturer-note p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+
 .why-grid {
   display: grid;
   grid-template-columns: 0.85fr 1.15fr;
@@ -288,6 +313,11 @@
   .video-modal-card { max-height: calc(100vh - 20px); padding: 14px; border-radius: 20px; }
   .video-modal-heading { padding: 8px 50px 15px 5px; }
   .guidelines-section { margin-top: 75px; padding: 72px 0; }
+  .setup-guide { padding: 75px 0 25px; }
+  .install-settings-guide { padding-top: 75px; }
+  .setup-step-grid { grid-template-columns: 1fr; }
+  .setup-step img { height: auto; max-height: 540px; }
+  .restricted-settings-note { align-items: flex-start; padding: 19px; }
   .identity-card { padding: 20px; }
   .outcome { padding: 21px 16px; }
   .outcome-icon { width: 46px; height: 46px; }
